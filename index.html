@@ -1,0 +1,44 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CSMSS Student VLSI Portal</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="login-container">
+        <h2>Login to CSMSS VLSI Portal</h2>
+        <input type="text" id="username" placeholder="Username">
+        <input type="password" id="password" placeholder="Password">
+        <button onclick="login()">LOGIN</button>
+        <div id="login-error" class="error"></div>
+    </div>
+
+    <div id="main-container" style="display:none;">
+        <h2>Welcome to CSMSS VLSI Portal!</h2>
+        <div id="year-selection">
+            <button onclick="showOptions('1st Year')">1st Year</button>
+            <button onclick="showOptions('2nd Year')">2nd Year</button>
+            <button onclick="showOptions('3rd Year')">3rd Year</button>
+            <button onclick="showOptions('Final Year')">Final Year</button>
+        </div>
+
+        <div id="options-container" style="display:none;">
+            <h3 id="year-title"></h3>
+            <div id="options"></div>
+        </div>
+
+        <div id="content-container" style="display:none;">
+            <h3 id="exam-title"></h3>
+            <div id="question-papers"></div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+
+    <footer>
+        <p>Created by Swapnil Shinde</p>
+        <p>&copy; 2025</p>
+    </footer>
+</body>
+</html>
