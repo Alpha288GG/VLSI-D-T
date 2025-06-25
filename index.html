@@ -1,44 +1,158 @@
-
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
-    <title>CSMSS Student VLSI Portal</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Edu Portal For Academia</title>
+  <link rel="stylesheet" href="style.css" />
+  <!-- Font Awesome for better icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-VBM0Q4NZKM"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', 'G-VBM0Q4NZKM');
+  </script>
 </head>
+
 <body>
-    <div id="login-container">
-        <h2>Login to CSMSS VLSI Portal</h2>
-        <input type="text" id="username" placeholder="Username">
-        <input type="password" id="password" placeholder="Password">
-        <button onclick="login()">LOGIN</button>
-        <div id="login-error" class="error"></div>
+  <!-- ✅ LOGIN SECTION -->
+  <div id="login-container">
+    <p id="disclaimer-msg">Disclaimer: This website is an independent student initiative and is not officially
+      affiliated with CSMSS College.</p>
+    <p id="creator-msg">Created by Swapnil Shinde ©2025</p>
+
+    <h2>Login to EDU PORTAL FOR ACADEMIA</h2>
+    <div class="input-group">
+      <input type="text" id="username" placeholder="Username" />
+      <div class="password-container">
+        <input type="password" id="password" placeholder="Password" />
+        <span id="togglePassword" class="eye-icon"><i class="fa-solid fa-eye"></i></span>
+      </div>
+      <button onclick="login()">LOGIN</button>
     </div>
 
-    <div id="main-container" style="display:none;">
-        <h2>Welcome to CSMSS VLSI Portal!</h2>
-        <div id="year-selection">
-            <button onclick="showOptions('1st Year')">1st Year</button>
-            <button onclick="showOptions('2nd Year')">2nd Year</button>
-            <button onclick="showOptions('3rd Year')">3rd Year</button>
-            <button onclick="showOptions('Final Year')">Final Year</button>
-        </div>
+    <div id="login-error" class="error"></div>
 
-        <div id="options-container" style="display:none;">
-            <h3 id="year-title"></h3>
-            <div id="options"></div>
-        </div>
+    <p id="creator-msg">If there is any issue with the website, contact the admin.</p>
+    <p id="updated-msg">Latest update on june 25, 2025</p>
+  </div>
 
-        <div id="content-container" style="display:none;">
-            <h3 id="exam-title"></h3>
-            <div id="question-papers"></div>
-        </div>
+  <!-- ✅ MAIN SECTION (After Login) -->
+  <div id="main-container" style="display:none;">
+    <p id="creator-msg">Created by Swapnil Shinde ©2025</p>
+    <h2>Welcome to Edu Portal!</h2>
+    <button id="logout-btn" onclick="logout()" style="position:absolute; top:20px; right:30px; background:#FF5252; color:white; border:none; border-radius:6px; padding:8px 18px; font-weight:bold; cursor:pointer; z-index:2;">Logout</button>
+    <!-- Debug Tools -->
+    <div style="margin-bottom: 20px; padding: 10px; background-color: #f0f0f0; border-radius: 5px;">
+      <button onclick="checkIfAdmin()" style="background-color: #FF5722; color: white; padding: 5px 10px; border: none; border-radius: 4px; margin-right: 10px;">
+        Check Admin Status
+      </button>
+      <button onclick="testDeleteFile()" style="background-color: #F44336; color: white; padding: 5px 10px; border: none; border-radius: 4px;">
+        Test Delete Function
+      </button>
+      <span style="margin-left: 10px; font-size: 12px;">Use these tools to verify your login status and test functions</span>
     </div>
 
-    <script src="script.js"></script>
+    <!-- Year Selection -->
+    <div id="year-selection" class="section">
+      <button onclick="showSemesters('1st Year')">1st Year</button>
+      <button onclick="showSemesters('2nd Year')">2nd Year</button>
+      <button onclick="showSemesters('3rd Year')">3rd Year</button>
+      <button onclick="showSemesters('Final Year')">Final Year</button>
+    </div>
 
-    <footer>
-        <p>Created by Swapnil Shinde</p>
-        <p>&copy; 2025</p>
-    </footer>
+    <!-- Semester Selection -->
+    <div id="semesters" class="section" style="display:none;">
+      <h3 id="year-title"></h3>
+    </div>
+
+    <!-- Subject Selection -->
+    <div id="subjects-container" style="display:none;">
+      <h3 id="year-title"></h3>
+      <div id="subjects"></div>
+    </div>
+
+    <!-- Exam Selection -->
+    <div id="exams-container" style="display:none;">
+      <h3 id="subject-title"></h3>
+      <div id="exams"></div>
+    </div>
+
+    <!-- ✅ Content Section -->
+    <div id="content-container" style="display:none;">
+      <h3 id="exam-title"></h3>
+      <div id="question-papers"></div>
+    </div>
+
+    <!-- ✅ Admin Upload Section -->
+    <div id="upload-container" style="display:none;">
+      <h3>Add Study Material</h3>
+      <div class="input-group">
+        <input type="text" id="file-name" placeholder="Enter File Name" />
+        <input type="text" id="file-link" placeholder="Enter File URL (Google Drive, OneDrive, etc.)" />
+        <div style="margin: 10px 0;">OR</div>
+        <input type="file" id="file-upload" />
+        <button onclick="addFileWithLink()">Add Material (Link)</button>
+        <button onclick="addFileWithUpload()">Add Material (Upload)</button>
+      </div>
+      <p id="upload-success" style="color: green; display: none;">File Added Successfully!</p>
+      <p id="upload-error" style="color: red; display: none;">Failed to add file. Please try again.</p>
+      
+      <!-- Debug button to check for issues -->
+      <button onclick="testAddMaterial()" style="margin-top: 20px; background-color: #FF5722;">Test Add Material</button>
+    </div>
+  </div>
+
+  <!-- ✅ JavaScript -->
+  <script src="script.js"></script>
+  <script>
+    // ✅ Toggle Password
+    document.addEventListener("DOMContentLoaded", function() {
+      const togglePassword = document.getElementById("togglePassword");
+      if (togglePassword) {
+        togglePassword.addEventListener("click", function () {
+          const passwordInput = document.getElementById("password");
+          if (!passwordInput) return;
+          
+          if (passwordInput.type === "password") {
+            passwordInput.type = "text";
+            this.innerHTML = '<i class="fa-solid fa-eye-slash"></i>';
+          } else {
+            passwordInput.type = "password";
+            this.innerHTML = '<i class="fa-solid fa-eye"></i>';
+          }
+        });
+      }
+      
+      // Make sure all buttons have proper event handlers
+      console.log("Checking if addFileWithLink function exists:", typeof addFileWithLink);
+    });
+    
+    // Debug function to test Add Material functionality
+    function testAddMaterial() {
+      console.log("Test button clicked");
+      console.log("File name input:", document.getElementById("file-name"));
+      console.log("File link input:", document.getElementById("file-link"));
+      console.log("Exam title:", document.getElementById("exam-title").textContent);
+      
+      // Try manually adding a test file
+      if (typeof addFileWithLink === 'function') {
+        // Set some test values first
+        document.getElementById("file-name").value = "Test File";
+        document.getElementById("file-link").value = "https://example.com/testfile";
+        
+        // Call the function
+        addFileWithLink();
+      } else {
+        alert("addFileWithLink function not found!");
+      }
+    }
+  </script>
 </body>
+
 </html>
