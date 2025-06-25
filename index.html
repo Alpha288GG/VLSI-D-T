@@ -52,7 +52,7 @@
       <button onclick="checkIfAdmin()" style="background-color: #FF5722; color: white; padding: 5px 10px; border: none; border-radius: 4px; margin-right: 10px;">
         Check Admin Status
       </button>
-      <button onclick="testDeleteFile()" style="background-color: #F44336; color: white; padding: 5px 10px; border: none; border-radius: 4px;">
+      <button id="testDeleteBtn" onclick="testDeleteFile()" style="background-color: #F44336; color: white; padding: 5px 10px; border: none; border-radius: 4px; display:none;">
         Test Delete Function
       </button>
       <span style="margin-left: 10px; font-size: 12px;">Use these tools to verify your login status and test functions</span>
@@ -131,6 +131,16 @@
       
       // Make sure all buttons have proper event handlers
       console.log("Checking if addFileWithLink function exists:", typeof addFileWithLink);
+      
+      // Hide test delete button for non-admins
+      const testDeleteBtn = document.getElementById("testDeleteBtn");
+      if (testDeleteBtn) {
+        if (typeof isAdmin !== 'undefined' && isAdmin) {
+          testDeleteBtn.style.display = "inline-block";
+        } else {
+          testDeleteBtn.style.display = "none";
+        }
+      }
     });
     
     // Debug function to test Add Material functionality
