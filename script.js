@@ -180,44 +180,180 @@ function showSemesters(year) {
   });
 }
 
-// Show Subjects
+// Show Subjects (with admin controls)
 function showSubjects(yearSemester) {
   if (!isLoggedIn) return;
-
   document.getElementById("year-title").textContent = yearSemester;
   ["subjects-container", "exams-container", "content-container", "upload-container"].forEach(id => document.getElementById(id).style.display = "none");
   document.getElementById("subjects-container").style.display = "block";
-
   const [year, semester] = yearSemester.split(" - ");
   const subjectsContainer = document.getElementById("subjects");
   subjectsContainer.innerHTML = "";
-
-  if (questionPapers[year]?.[semester]) {
-    Object.keys(questionPapers[year][semester]).forEach(subject => {
+  // Get subjects from localStorage if available, else from questionPapers
+  let subjects = getSubjectsForYearSemester(year, semester);
+  if (subjects.length > 0) {
+    subjects.forEach(subject => {
+      const subjectDiv = document.createElement("div");
+      subjectDiv.style.display = "flex";
+      subjectDiv.style.alignItems = "center";
+      subjectDiv.style.marginBottom = "10px";
       const btn = document.createElement("button");
       btn.textContent = subject;
       btn.onclick = () => showExams(yearSemester, subject);
-      subjectsContainer.appendChild(btn);
+      btn.style.flex = "1";
+      subjectDiv.appendChild(btn);
+      if (isAdmin) {
+        // Edit button
+        const editBtn = document.createElement("button");
+        editBtn.innerHTML = '<i class="fa fa-edit"></i>';
+        editBtn.title = "Edit Subject";
+        editBtn.style.marginLeft = "8px";
+        editBtn.onclick = () => editSubjectPrompt(year, semester, subject);
+        subjectDiv.appendChild(editBtn);
+        // Delete button
+        const delBtn = document.createElement("button");
+        delBtn.innerHTML = '<i class="fa fa-trash"></i>';
+        delBtn.title = "Delete Subject";
+        delBtn.style.marginLeft = "4px";
+        delBtn.onclick = () => deleteSubject(year, semester, subject);
+        subjectDiv.appendChild(delBtn);
+      }
+      subjectsContainer.appendChild(subjectDiv);
     });
   } else {
     subjectsContainer.innerHTML = "<p>No subjects available for this semester.</p>";
   }
+  // Add subject form for admin
+  if (isAdmin) {
+    const addDiv = document.createElement("div");
+    addDiv.style.marginTop = "18px";
+    addDiv.innerHTML = '<input id="new-subject-input" type="text" placeholder="Add new subject..." style="padding:8px; border-radius:6px; border:1px solid #ccc; margin-right:8px;">' +
+      '<button id="add-subject-btn">Add</button>';
+    subjectsContainer.appendChild(addDiv);
+    // Attach event handler after adding to DOM
+    setTimeout(() => {
+      const btn = document.getElementById("add-subject-btn");
+      if (btn) btn.onclick = () => addSubject(year, semester);
+    }, 0);
+  }
+}
+
+// Helper: Get subjects for year/semester from localStorage or fallback
+function getSubjectsForYearSemester(year, semester) {
+  const key = `SUBJECTS_${year}_${semester}`;
+  let stored = localStorage.getItem(key);
+  if (stored) return JSON.parse(stored);
+  // fallback to questionPapers
+  if (questionPapers[year]?.[semester]) return Object.keys(questionPapers[year][semester]);
+  return [];
+}
+// Helper: Save subjects for year/semester
+function saveSubjectsForYearSemester(year, semester, subjects) {
+  const key = `SUBJECTS_${year}_${semester}`;
+  localStorage.setItem(key, JSON.stringify(subjects));
+}
+
+// Helper: Get default exam types for a new subject
+function getDefaultExamTypes() {
+  return ["ct1", "ct2", "midsem", "endsem", "obt", "pyq", "Notes"];
+}
+
+// Helper: Add default exams for a new subject in questionPapers
+function addDefaultExamsToQuestionPapers(year, semester, subject) {
+  if (!questionPapers[year]) questionPapers[year] = {};
+  if (!questionPapers[year][semester]) questionPapers[year][semester] = {};
+  if (!questionPapers[year][semester][subject]) {
+    const exams = getDefaultExamTypes();
+    const obj = {};
+    exams.forEach(e => obj[e] = []);
+    questionPapers[year][semester][subject] = obj;
+  }
+}
+
+// Add subject
+function addSubject(year, semester) {
+  const input = document.getElementById("new-subject-input");
+  let val = input.value.trim();
+  if (!val) return alert("Enter subject name");
+  let subjects = getSubjectsForYearSemester(year, semester);
+  if (subjects.includes(val)) return alert("Subject already exists");
+  subjects.push(val);
+  saveSubjectsForYearSemester(year, semester, subjects);
+  addDefaultExamsToQuestionPapers(year, semester, val);
+  input.value = "";
+  showSubjects(`${year} - ${semester}`);
+}
+
+// Edit subject
+function editSubjectPrompt(year, semester, oldSubject) {
+  let newSubject = prompt("Edit subject name:", oldSubject);
+  if (!newSubject) return;
+  newSubject = newSubject.trim();
+  if (!newSubject) return;
+  let subjects = getSubjectsForYearSemester(year, semester);
+  if (subjects.includes(newSubject)) return alert("Subject already exists");
+  // Update subject name in subjects list
+  subjects = subjects.map(s => s === oldSubject ? newSubject : s);
+  saveSubjectsForYearSemester(year, semester, subjects);
+  // Also update all file categories for this subject
+  updateSubjectInFiles(year, semester, oldSubject, newSubject);
+  showSubjects(`${year} - ${semester}`);
+}
+
+// Delete subject
+function deleteSubject(year, semester, subject) {
+  if (!confirm(`Delete subject '${subject}'? This will remove all its files.`)) return;
+  let subjects = getSubjectsForYearSemester(year, semester);
+  subjects = subjects.filter(s => s !== subject);
+  saveSubjectsForYearSemester(year, semester, subjects);
+  // Remove all files for this subject
+  removeSubjectFiles(year, semester, subject);
+  showSubjects(`${year} - ${semester}`);
+}
+
+// Update subject name in all file categories
+function updateSubjectInFiles(year, semester, oldSubject, newSubject) {
+  let allFiles = getAllFiles();
+  const prefix = `${year} - ${semester} - `;
+  for (let key in allFiles) {
+    if (key.startsWith(prefix + oldSubject + ' -')) {
+      const newKey = key.replace(prefix + oldSubject + ' -', prefix + newSubject + ' -');
+      allFiles[newKey] = allFiles[key];
+      delete allFiles[key];
+    }
+  }
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(allFiles));
+}
+
+// Remove all files for a deleted subject
+function removeSubjectFiles(year, semester, subject) {
+  let allFiles = getAllFiles();
+  const prefix = `${year} - ${semester} - ${subject} -`;
+  for (let key in allFiles) {
+    if (key.startsWith(prefix)) {
+      delete allFiles[key];
+    }
+  }
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(allFiles));
 }
 
 // Show Exams
 function showExams(yearSemester, subject) {
   if (!isLoggedIn) return;
-
   document.getElementById("subject-title").textContent = `${yearSemester} - ${subject}`;
   ["exams-container", "content-container", "upload-container"].forEach(id => document.getElementById(id).style.display = "none");
   document.getElementById("exams-container").style.display = "block";
-
   const examsContainer = document.getElementById("exams");
   examsContainer.innerHTML = "";
-
   const [year, semester] = yearSemester.split(" - ");
+  let examTypes = [];
   if (questionPapers[year]?.[semester]?.[subject]) {
-    Object.keys(questionPapers[year][semester][subject]).forEach(exam => {
+    examTypes = Object.keys(questionPapers[year][semester][subject]);
+  } else {
+    examTypes = getDefaultExamTypes();
+  }
+  if (examTypes.length > 0) {
+    examTypes.forEach(exam => {
       const btn = document.createElement("button");
       btn.textContent = exam.toUpperCase();
       btn.onclick = () => showQuestionPapers(yearSemester, subject, exam);
