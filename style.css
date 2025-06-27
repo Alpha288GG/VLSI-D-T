@@ -463,6 +463,20 @@ body::after {
   margin-top: 10px;
 }
 
+/* Creator Highlight */
+.highlight-creator {
+  font-weight: bold;
+  color: #fff;
+  background: linear-gradient(to right, #FF5722, #FF9800);
+  padding: 3px 12px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(255,87,34,0.10);
+  letter-spacing: 0.5px;
+  font-size: 13px;
+  display: inline-block;
+  margin: 8px 0;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   #login-container, #main-container {
